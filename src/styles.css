@@ -63,8 +63,18 @@
 
 :root {
   --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.129 0.042 264.695);
+  --background: oklch(0.18 0.04 250);
+  --foreground: oklch(0.96 0.01 220);
+  --navy-deep: oklch(0.15 0.045 255);
+  --navy: oklch(0.22 0.05 252);
+  --navy-soft: oklch(0.28 0.045 250);
+  --teal: oklch(0.72 0.13 195);
+  --teal-bright: oklch(0.8 0.14 190);
+  --teal-foreground: oklch(0.15 0.045 255);
+  --gradient-hero: linear-gradient(135deg, oklch(0.15 0.045 255), oklch(0.25 0.07 220));
+  --gradient-accent: linear-gradient(135deg, oklch(0.72 0.13 195), oklch(0.6 0.15 220));
+  --shadow-card: 0 10px 40px -10px oklch(0.1 0.05 250 / 0.5);
+  --shadow-glow: 0 0 40px oklch(0.72 0.13 195 / 0.25);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.129 0.042 264.695);
   --popover: oklch(1 0 0);
