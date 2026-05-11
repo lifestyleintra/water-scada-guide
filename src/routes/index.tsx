@@ -1,5 +1,177 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Activity, Waves } from "lucide-react";
+import { Activity, Waves, Shuffle, X } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+
+const photoLibrary: string[] = [
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495500/IMG_1360_vpu4r9.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495500/IMG_1361_uxvnnn.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495500/IMG_1359_oxxgrp.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495500/IMG_1358_sr0la8.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495499/IMG_1348_xwh9fx.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495499/IMG_1347_jmdp05.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495499/IMG_1346_dk66dx.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495499/IMG_1345_hlxpqb.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495499/IMG_1344_eayjvo.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495499/IMG_1343_mooq9p.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495499/IMG_1341_oiazjo.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495498/IMG_1339_iwy8ud.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495498/IMG_1338_vil9vq.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495498/IMG_1336_r7f6y3.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495498/IMG_1335_r4ot9z.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495498/IMG_1334_tfeigv.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495498/IMG_1333_hi2ufx.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495497/IMG_1332_imjayn.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495497/IMG_1331_rf4gjh.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495497/IMG_1330_b4hkzu.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495497/IMG_1329_yeerya.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495497/IMG_1327_tsmo8t.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495496/IMG_1326_frzajq.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495496/IMG_1322_hn7tcd.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495496/IMG_1323_yvgycr.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495496/IMG_1321_j5otnu.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495496/IMG_1320_bj8rbn.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495495/IMG_1319_k2xpfs.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495495/IMG_1318_tfkb8a.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495495/IMG_1317_wumzus.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495495/IMG_1316_r92xse.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495495/IMG_1315_xoqmc3.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495495/IMG_1314_bnogds.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495495/IMG_1313_v9z2k7.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495494/IMG_1312_zroxgx.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495494/IMG_1311_imxmme.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495494/IMG_1310_mtwbvv.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495494/IMG_1309_as5xel.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495494/IMG_1308_diylja.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495493/IMG_1305_aoff7w.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495493/IMG_1307_vptzx1.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495493/IMG_1306_d5djle.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495493/IMG_1304_zdqpyy.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495493/IMG_1303_n5wlwy.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495493/IMG_1302_bcovay.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495492/IMG_1301_svto7c.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495492/IMG_1300_fayewu.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495492/IMG_1299_ynh9uv.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495492/IMG_1298_denufn.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495492/IMG_1297_pai6cr.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495492/IMG_1296_wva3lw.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495491/IMG_1295_pl6qdx.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495491/IMG_1294_cwnaja.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495491/IMG_1293_jhc2ju.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495491/IMG_1292_mdhho2.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495491/IMG_1291_w6p0ts.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495491/IMG_1290_wx74bc.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495491/IMG_1287_dop3nq.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495490/IMG_1289_gsvtrp.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495490/IMG_1288_xrjgoa.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495490/IMG_1286_lhfd00.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495490/IMG_1285_evzrx2.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495489/IMG_1284_l1lnb3.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495489/IMG_1283_g7wa5k.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495489/IMG_1281_jruusw.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495489/IMG_1280_lq29dc.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495489/IMG_1282_zdodmx.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495489/IMG_1279_tvl7xl.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495489/IMG_1278_hqhrq1.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495488/IMG_1277_bkzuyv.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495488/IMG_1276_afz7mw.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495488/IMG_1275_vcmkwq.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495488/IMG_1271_mucsis.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495488/IMG_1274_l0kni3.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495488/IMG_1273_hf3uhk.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495487/IMG_1272_ih1n9a.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495487/IMG_1269_ijzhaq.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495487/IMG_1270_nhfluy.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495487/IMG_1268_n2xg2w.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495487/IMG_1267_shyh3e.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495486/IMG_1266_gsgesm.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495486/IMG_1264_gn9fiv.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495486/IMG_1265_jh5n25.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495486/IMG_1262_azdgsm.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495486/IMG_1261_qhbift.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495485/IMG_1259_xzjg7a.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495485/IMG_1260_wxwfkp.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495485/IMG_1258_wkz6rd.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495485/IMG_1256_axjl02.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495485/IMG_1257_lxsd1a.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495485/IMG_1255_ptxcej.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495484/IMG_1254_oekfds.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495484/IMG_1253_va1vu6.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495484/IMG_1252_gzuihk.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495484/IMG_1251_zdd1xv.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495484/IMG_1249_yerwlm.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495484/IMG_1250_juves2.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495484/IMG_1249_1_gwsvmo.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495483/IMG_1248_gjlxm3.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495483/IMG_1245_ohrvzy.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495483/IMG_1247_xnlugq.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495483/IMG_1246_hi2nah.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495483/IMG_1242_ruwth5.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495483/IMG_1244_bb3hvi.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495482/IMG_1243_pu4nki.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495482/IMG_1241_whn2ws.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495482/IMG_1240_kqe02j.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495482/IMG_1237_yr6cu5.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495482/IMG_1238_ivikoz.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495482/IMG_1239_b2pvho.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495481/IMG_1235_trpzkm.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495481/IMG_1236_h4ww7d.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495481/IMG_1234_kpn0hk.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495481/IMG_1233_bpgavb.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495481/IMG_1232_mp7plr.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495481/IMG_1231_cxv9uk.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495480/IMG_1230_dsbf42.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495480/IMG_1229_nnpepd.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495480/IMG_1228_lhddy4.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495480/IMG_1227_zgozae.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495480/IMG_1224_w5dmni.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495480/IMG_1222_jxxnsy.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495480/IMG_1225_ebnwgo.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495479/IMG_1220_q0vwq2.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495479/IMG_1221_nyte27.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495479/IMG_1219_em8bmj.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495479/IMG_1216_cpn8vz.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495479/IMG_1217_kmrefc.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495478/IMG_1215_fu6mq0.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495478/IMG_1214_srxirg.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495478/IMG_1166_xlg7qp.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495478/IMG_1212_gj16en.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495478/IMG_1211_ttnclm.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495478/IMG_1210_m4pjrx.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495477/IMG_1209_auafhf.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495477/IMG_1165_gaqenc.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495477/IMG_1175_ljxzkk.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495477/IMG_1164_jfsxhz.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495476/IMG_1163_kylgmq.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495476/IMG_1162_iahh3m.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495476/IMG_1161_yydzls.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495476/IMG_1174_ndxagx.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495476/IMG_1173_o6okpv.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495476/IMG_1160_bui8iq.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495474/IMG_1156_pgz2um.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495475/IMG_1159_nfynqp.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495475/IMG_1172_mnr1to.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495475/IMG_1171_e3w1uk.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495475/IMG_1158_itbajf.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495474/IMG_1170_xpc6nt.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495473/IMG_1168_pzjvhe.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495474/IMG_1157_wplsat.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495474/IMG_1169_tj5hkj.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495474/IMG_1155_mngd6g.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495473/IMG_1154_ritmiy.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495473/IMG_1153_fixwda.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495473/IMG_1152_kkvrqt.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495473/IMG_1151_xptbbe.png",
+  "https://res.cloudinary.com/drt31kff9/image/upload/v1778495473/IMG_1167_tci6dr.png",
+];
+
+function fisherYatesShuffle<T>(arr: T[]): T[] {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -228,7 +400,7 @@ const sections: Section[] = [
   },
 ];
 
-function Nav() {
+function Nav({ onShuffle }: { onShuffle: () => void }) {
   return (
     <header className="sticky top-0 z-50 backdrop-blur-md bg-[oklch(0.15_0.045_255/0.85)] border-b border-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-4">
@@ -255,28 +427,66 @@ function Nav() {
             </a>
           ))}
         </nav>
-        <a
-          href="#s1"
-          className="lg:hidden text-xs px-3 py-1.5 rounded-md bg-[var(--teal)] text-[var(--teal-foreground)] font-semibold"
-        >
-          Start
-        </a>
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            type="button"
+            onClick={onShuffle}
+            className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-md bg-[var(--teal)] text-[var(--teal-foreground)] font-semibold hover:bg-[var(--teal-bright)] transition-colors"
+            aria-label="Shuffle photos"
+          >
+            <Shuffle className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Shuffle Photos</span>
+            <span className="sm:hidden">Shuffle</span>
+          </button>
+        </div>
       </div>
     </header>
   );
 }
 
-function ImgPlaceholder({ id, label }: { id: string; label: string }) {
+function PhotoFrame({
+  id,
+  label,
+  src,
+  onOpen,
+}: {
+  id: string;
+  label: string;
+  src?: string;
+  onOpen: (src: string) => void;
+}) {
   return (
     <div className="img-placeholder" id={id}>
-      <span className="text-2xl" aria-hidden>📷</span>
-      <div className="font-medium">Image: {label}</div>
-      <small className="opacity-70">(9:16 Portrait)</small>
+      {src ? (
+        <img
+          key={src}
+          src={src}
+          alt={label}
+          loading="lazy"
+          onClick={() => onOpen(src)}
+        />
+      ) : (
+        <>
+          <span className="text-2xl" aria-hidden>📷</span>
+          <div className="font-medium">Image: {label}</div>
+          <small className="opacity-70">(9:16 Portrait)</small>
+        </>
+      )}
     </div>
   );
 }
 
-function SectionBlock({ s }: { s: Section }) {
+function SectionBlock({
+  s,
+  photoA,
+  photoB,
+  onOpen,
+}: {
+  s: Section;
+  photoA?: string;
+  photoB?: string;
+  onOpen: (src: string) => void;
+}) {
   return (
     <section id={s.id} className="py-16 sm:py-20 border-b border-border/50">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
@@ -303,8 +513,8 @@ function SectionBlock({ s }: { s: Section }) {
           </div>
 
           <div className="flex flex-col sm:flex-row lg:flex-col gap-4 justify-center">
-            <ImgPlaceholder id={`img-${s.id}a`} label={s.imgLabel} />
-            <ImgPlaceholder id={`img-${s.id}b`} label={s.imgLabel} />
+            <PhotoFrame id={`img-${s.id}a`} label={s.imgLabel} src={photoA} onOpen={onOpen} />
+            <PhotoFrame id={`img-${s.id}b`} label={s.imgLabel} src={photoB} onOpen={onOpen} />
           </div>
         </div>
       </div>
@@ -312,10 +522,61 @@ function SectionBlock({ s }: { s: Section }) {
   );
 }
 
+function Lightbox({ src, onClose }: { src: string | null; onClose: () => void }) {
+  useEffect(() => {
+    if (!src) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = "";
+    };
+  }, [src, onClose]);
+
+  if (!src) return null;
+  return (
+    <div
+      className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in"
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+    >
+      <button
+        type="button"
+        onClick={onClose}
+        className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors"
+        aria-label="Close"
+      >
+        <X className="w-5 h-5" />
+      </button>
+      <img
+        src={src}
+        alt="Expanded view"
+        className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      />
+    </div>
+  );
+}
+
 function Index() {
+  const [photos, setPhotos] = useState<string[]>([]);
+  const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
+
+  const shuffle = useCallback(() => {
+    setPhotos(fisherYatesShuffle(photoLibrary));
+  }, []);
+
+  useEffect(() => {
+    shuffle();
+  }, [shuffle]);
+
   return (
     <div id="top" className="min-h-screen bg-background text-foreground">
-      <Nav />
+      <Nav onShuffle={shuffle} />
 
       <section className="relative overflow-hidden">
         <div
@@ -361,8 +622,14 @@ function Index() {
       </section>
 
       <main>
-        {sections.map((s) => (
-          <SectionBlock key={s.id} s={s} />
+        {sections.map((s, i) => (
+          <SectionBlock
+            key={s.id}
+            s={s}
+            photoA={photos[i * 2]}
+            photoB={photos[i * 2 + 1]}
+            onOpen={setLightboxSrc}
+          />
         ))}
       </main>
 
@@ -371,6 +638,8 @@ function Index() {
           SCADA Guide for Water &amp; Wastewater Treatment · Educational reference
         </div>
       </footer>
+
+      <Lightbox src={lightboxSrc} onClose={() => setLightboxSrc(null)} />
     </div>
   );
 }
