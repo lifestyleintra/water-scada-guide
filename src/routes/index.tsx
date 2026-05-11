@@ -456,13 +456,18 @@ function PhotoFrame({
   onOpen: (src: string) => void;
 }) {
   return (
-    <div className="img-placeholder" id={id}>
+    <div
+      className="img-placeholder"
+      id={id}
+      style={{ minHeight: "260px", minWidth: "150px" }}
+    >
       {src ? (
         <img
           key={src}
           src={src}
           alt={label}
-          loading="lazy"
+          loading="eager"
+          style={{ width: "100%", height: "100%", objectFit: "cover" }}
           onClick={() => onOpen(src)}
         />
       ) : (
