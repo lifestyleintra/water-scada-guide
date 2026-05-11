@@ -400,7 +400,7 @@ const sections: Section[] = [
   },
 ];
 
-function Nav() {
+function Nav({ onShuffle }: { onShuffle: () => void }) {
   return (
     <header className="sticky top-0 z-50 backdrop-blur-md bg-[oklch(0.15_0.045_255/0.85)] border-b border-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-4">
@@ -427,28 +427,66 @@ function Nav() {
             </a>
           ))}
         </nav>
-        <a
-          href="#s1"
-          className="lg:hidden text-xs px-3 py-1.5 rounded-md bg-[var(--teal)] text-[var(--teal-foreground)] font-semibold"
-        >
-          Start
-        </a>
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            type="button"
+            onClick={onShuffle}
+            className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-md bg-[var(--teal)] text-[var(--teal-foreground)] font-semibold hover:bg-[var(--teal-bright)] transition-colors"
+            aria-label="Shuffle photos"
+          >
+            <Shuffle className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Shuffle Photos</span>
+            <span className="sm:hidden">Shuffle</span>
+          </button>
+        </div>
       </div>
     </header>
   );
 }
 
-function ImgPlaceholder({ id, label }: { id: string; label: string }) {
+function PhotoFrame({
+  id,
+  label,
+  src,
+  onOpen,
+}: {
+  id: string;
+  label: string;
+  src?: string;
+  onOpen: (src: string) => void;
+}) {
   return (
     <div className="img-placeholder" id={id}>
-      <span className="text-2xl" aria-hidden>📷</span>
-      <div className="font-medium">Image: {label}</div>
-      <small className="opacity-70">(9:16 Portrait)</small>
+      {src ? (
+        <img
+          key={src}
+          src={src}
+          alt={label}
+          loading="lazy"
+          onClick={() => onOpen(src)}
+        />
+      ) : (
+        <>
+          <span className="text-2xl" aria-hidden>📷</span>
+          <div className="font-medium">Image: {label}</div>
+          <small className="opacity-70">(9:16 Portrait)</small>
+        </>
+      )}
     </div>
   );
 }
 
-function SectionBlock({ s }: { s: Section }) {
+function SectionBlock({
+  s,
+  photoA,
+  photoB,
+  onOpen,
+}: {
+  s: Section;
+  photoA?: string;
+  photoB?: string;
+  onOpen: (src: string) => void;
+}) {
   return (
     <section id={s.id} className="py-16 sm:py-20 border-b border-border/50">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
@@ -475,8 +513,8 @@ function SectionBlock({ s }: { s: Section }) {
           </div>
 
           <div className="flex flex-col sm:flex-row lg:flex-col gap-4 justify-center">
-            <ImgPlaceholder id={`img-${s.id}a`} label={s.imgLabel} />
-            <ImgPlaceholder id={`img-${s.id}b`} label={s.imgLabel} />
+            <PhotoFrame id={`img-${s.id}a`} label={s.imgLabel} src={photoA} onOpen={onOpen} />
+            <PhotoFrame id={`img-${s.id}b`} label={s.imgLabel} src={photoB} onOpen={onOpen} />
           </div>
         </div>
       </div>
@@ -484,10 +522,61 @@ function SectionBlock({ s }: { s: Section }) {
   );
 }
 
+function Lightbox({ src, onClose }: { src: string | null; onClose: () => void }) {
+  useEffect(() => {
+    if (!src) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = "";
+    };
+  }, [src, onClose]);
+
+  if (!src) return null;
+  return (
+    <div
+      className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in"
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+    >
+      <button
+        type="button"
+        onClick={onClose}
+        className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors"
+        aria-label="Close"
+      >
+        <X className="w-5 h-5" />
+      </button>
+      <img
+        src={src}
+        alt="Expanded view"
+        className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      />
+    </div>
+  );
+}
+
 function Index() {
+  const [photos, setPhotos] = useState<string[]>([]);
+  const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
+
+  const shuffle = useCallback(() => {
+    setPhotos(fisherYatesShuffle(photoLibrary));
+  }, []);
+
+  useEffect(() => {
+    shuffle();
+  }, [shuffle]);
+
   return (
     <div id="top" className="min-h-screen bg-background text-foreground">
-      <Nav />
+      <Nav onShuffle={shuffle} />
 
       <section className="relative overflow-hidden">
         <div
@@ -533,8 +622,14 @@ function Index() {
       </section>
 
       <main>
-        {sections.map((s) => (
-          <SectionBlock key={s.id} s={s} />
+        {sections.map((s, i) => (
+          <SectionBlock
+            key={s.id}
+            s={s}
+            photoA={photos[i * 2]}
+            photoB={photos[i * 2 + 1]}
+            onOpen={setLightboxSrc}
+          />
         ))}
       </main>
 
@@ -543,6 +638,8 @@ function Index() {
           SCADA Guide for Water &amp; Wastewater Treatment · Educational reference
         </div>
       </footer>
+
+      <Lightbox src={lightboxSrc} onClose={() => setLightboxSrc(null)} />
     </div>
   );
 }
